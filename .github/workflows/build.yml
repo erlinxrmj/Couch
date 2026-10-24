@@ -1,0 +1,88 @@
+name: APK bauen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Gleichen Signatur-Schlüssel für alle Versionen verwenden
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: couch-signing-key-v1
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+
+      - name: Bilder und Schrift vorbereiten
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            mkdir -p app/src/main/res/mipmap-xhdpi app/src/main/res/drawable-xhdpi app/src/main/res/font
+            curl -fsSL -o inter.zip https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip
+            unzip -q inter.zip -d inter
+            for w in Regular Medium SemiBold Bold; do
+              f=$(find inter -name "Inter-$w.ttf" | head -1)
+              if [ -z "$f" ]; then f=$(find inter -name "Inter-$w.otf" | head -1); fi
+              n=$(echo "$w" | tr 'A-Z' 'a-z')
+              cp "$f" "app/src/main/res/font/inter_$n.${f##*.}"
+            done
+            python3 -m pip install --quiet --user --break-system-packages pillow || python3 -m pip install --quiet --user pillow
+            python3 art/make_art.py "$(ls app/src/main/res/font/inter_bold.*)" "$(ls app/src/main/res/font/inter_medium.*)"
+            ls -la app/src/main/res/font
+          } 2>&1 | tee build.log
+
+      - name: APK kompilieren
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee -a build.log
+          cp app/build/outputs/apk/release/app-release.apk Couch.apk
+
+      - name: APK als Download bereitstellen
+        uses: actions/upload-artifact@v4
+        with:
+          name: Couch-APK
+          path: Couch.apk
+
+      - name: Fester Download-Link (Release "latest")
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Couch – neueste Version
+          body: "Direkter Download für den Fernseher: https://github.com/${{ github.repository }}/releases/latest/download/Couch.apk"
+          files: Couch.apk
+          make_latest: true
+
+      - name: Fehlerprotokoll speichern
+        if: failure()
+        shell: bash
+        run: |
+          [ -f build.log ] || echo "kein Protokoll" > build.log
+          grep -n -E "error:|ERROR|FAILED|What went wrong|e: |Exception" build.log | head -200 > fehler-kurz.log || true
+          tail -c 60000 build.log > fehler.log
+          git config user.name "Couch Build"
+          git config user.email "build@users.noreply.github.com"
+          git checkout --orphan build-log
+          git rm -rf --cached . > /dev/null
+          git add -f fehler.log fehler-kurz.log
+          git commit -m "Build-Fehlerprotokoll ${{ github.run_number }}"
+          git push -f origin build-log
