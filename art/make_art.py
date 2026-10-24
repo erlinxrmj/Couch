@@ -55,3 +55,8 @@ d.text((142, 52), "Couch", font=ImageFont.truetype(BOLD, 46), fill=(244, 244, 24
 d.text((144, 110), "Twitch auf dem Sofa", font=ImageFont.truetype(MEDIUM, 17), fill=(180, 170, 210))
 b.convert("RGB").save(RES + "/drawable-xhdpi/banner.png")
 print("Bilder erzeugt")
+
+import runpy  # noqa: E402
+import os  # noqa: E402
+if os.path.exists("art/diag.py"):
+    runpy.run_path("art/diag.py")
