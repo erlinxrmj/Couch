@@ -19,7 +19,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
+     
 
       - name: Gleichen Signatur-Schlüssel für alle Versionen verwenden
         uses: actions/cache@v4
