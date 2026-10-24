@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="296dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/thumbBox"
+        android:layout_width="296dp"
+        android:layout_height="166dp"
+        android:background="@drawable/thumb_bg"
+        android:duplicateParentState="true"
+        android:foreground="@drawable/card_ring">
+
+        <ImageView
+            android:id="@+id/thumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/thumb_shade" />
+
+        <TextView
+            style="@style/T.Badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@drawable/badge_live"
+            android:paddingStart="7dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="7dp"
+            android:paddingBottom="4dp"
+            android:text="LIVE" />
+
+        <TextView
+            android:id="@+id/followedBadge"
+            style="@style/T.Badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="10dp"
+            android:background="@drawable/badge_accent"
+            android:paddingStart="7dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="7dp"
+            android:paddingBottom="4dp"
+            android:text="♥ GEFOLGT" />
+
+        <TextView
+            android:id="@+id/viewers"
+            style="@style/T.Badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_margin="10dp"
+            android:background="@drawable/badge_glass"
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="4dp" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="2dp"
+        android:paddingTop="12dp">
+
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginEnd="12dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/name"
+                style="@style/T.Name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/title"
+                style="@style/T.Sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp" />
+
+            <TextView
+                android:id="@+id/game"
+                style="@style/T.Sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/accent"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

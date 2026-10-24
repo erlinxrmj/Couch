@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="96dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="40dp"
+            android:paddingTop="32dp"
+            android:paddingEnd="48dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/greeting"
+                    style="@style/T.Hero"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Guten Abend" />
+
+                <TextView
+                    android:id="@+id/subtitle"
+                    style="@style/T"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/text_dim"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/clock"
+                style="@style/T"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:textColor="@color/text_dim"
+                android:textSize="22sp" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rows"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="60dp" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/accent" />
+
+    <View
+        android:id="@+id/scrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="#B3000000"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/sidebar"
+        android:layout_width="96dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_sidebar"
+        android:orientation="vertical"
+        android:paddingTop="28dp"
+        android:paddingBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="24dp">
+
+            <FrameLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/logo_bg">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_couch" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/brand"
+                style="@style/T"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:alpha="0"
+                android:fontFamily="@font/inter_bold"
+                android:singleLine="true"
+                android:text="Couch"
+                android:textSize="22sp" />
+        </LinearLayout>
+
+        <include
+            android:id="@+id/navHome"
+            layout="@layout/item_nav" />
+
+        <include
+            android:id="@+id/navSearch"
+            layout="@layout/item_nav" />
+
+        <TextView
+            android:id="@+id/followLabel"
+            style="@style/T.Caps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:alpha="0"
+            android:paddingStart="32dp"
+            android:singleLine="true"
+            android:text="GEFOLGT" />
+
+        <View
+            android:id="@+id/followDivider"
+            android:layout_width="40dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginBottom="8dp"
+            android:background="#26FFFFFF" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/followList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="24dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/snack"
+        style="@style/T"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="40dp"
+        android:alpha="0"
+        android:background="@drawable/snack"
+        android:fontFamily="@font/inter_medium"
+        android:paddingStart="28dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="14dp"
+        android:textSize="16sp" />
+</FrameLayout>
