@@ -1,0 +1,47 @@
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@drawable/bg_app</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:colorPrimary">@color/bg</item>
+        <item name="android:fontFamily">@font/inter_regular</item>
+    </style>
+
+    <style name="T" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/text</item>
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="T.Hero">
+        <item name="android:fontFamily">@font/inter_bold</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+    <style name="T.Row">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">19sp</item>
+    </style>
+    <style name="T.Name">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    <style name="T.Sub">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/text_dim</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    <style name="T.Badge">
+        <item name="android:fontFamily">@font/inter_bold</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+    <style name="T.Caps">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:textColor">@color/text_faint</item>
+    </style>
+</resources>
