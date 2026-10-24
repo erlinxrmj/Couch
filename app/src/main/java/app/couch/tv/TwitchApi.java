@@ -30,7 +30,9 @@ import okhttp3.ResponseBody;
  */
 public final class TwitchApi {
     private static final String TAG = "TwitchApi";
+    /** Die Web-Kennung wird von Twitch inzwischen abgelehnt, nur noch als Reserve. */
     public static final String WEB_CLIENT_ID = "kimne78kx3ncx6brgo4mf6uqjbnv4r9";
+    /** Android-Kennung (wie SmartTwitchTV) – funktioniert für alle Abfragen. */
     public static final String ANDROID_CLIENT_ID = "kd1unb4b3q4t58fwlpcbzcbnm76a8fp";
     public static final String UA =
             "Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
@@ -117,7 +119,7 @@ public final class TwitchApi {
         JSONObject body = new JSONObject();
         body.put("query", q);
         if (vars != null) body.put("variables", vars);
-        JSONObject res = post(body.toString(), WEB_CLIENT_ID);
+        JSONObject res = post(body.toString(), ANDROID_CLIENT_ID);
         JSONObject data = res.optJSONObject("data");
         if (data == null) throw new Exception("GQL-Fehler: " + res.optJSONArray("errors"));
         return data;
@@ -363,7 +365,7 @@ public final class TwitchApi {
     /** Haupt-Stream (beste Qualität). */
     public static Playback mainPlayback(String login) throws Exception {
         String[] tok = null;
-        for (String cid : new String[]{WEB_CLIENT_ID, ANDROID_CLIENT_ID}) {
+        for (String cid : new String[]{ANDROID_CLIENT_ID, WEB_CLIENT_ID}) {
             try {
                 tok = token(login, "site", cid);
                 if (tok != null) break;
@@ -398,7 +400,7 @@ public final class TwitchApi {
         String[] types = {"embed", "popout", "autoplay", "picture-by-picture", "thunderdome"};
         for (String pt : types) {
             try {
-                String[] tok = token(login, pt, WEB_CLIENT_ID);
+                String[] tok = token(login, pt, ANDROID_CLIENT_ID);
                 if (tok == null) continue;
                 String url = usherUrl(login, tok);
                 String master = get(url);
