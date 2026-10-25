@@ -97,8 +97,12 @@ public final class TwitchApi {
     }
 
     public static String get(String url) throws Exception {
+        return get(HTTP, url);
+    }
+
+    public static String get(OkHttpClient client, String url) throws Exception {
         Request req = new Request.Builder().url(url).header("User-Agent", UA).build();
-        try (Response resp = HTTP.newCall(req).execute()) {
+        try (Response resp = client.newCall(req).execute()) {
             ResponseBody rb = resp.body();
             String s = rb != null ? rb.string() : "";
             if (!resp.isSuccessful()) throw new HttpException(resp.code());
@@ -311,15 +315,15 @@ public final class TwitchApi {
 
     // ---------------------------------------------------------------- Wiedergabe
 
-    /** Holt Token+Signatur für einen Live-Stream mit einem bestimmten Player-Typ. */
-    private static String[] token(String login, String playerType, String clientId) throws Exception {
+    /** Holt Token+Signatur für einen Live-Stream mit einem bestimmten Player-Typ und einer Plattform. */
+    private static String[] token(String login, String playerType, String platform, String clientId) throws Exception {
         JSONObject vars = new JSONObject();
         vars.put("isLive", true);
         vars.put("login", login);
         vars.put("isVod", false);
         vars.put("vodID", "");
         vars.put("playerType", playerType);
-        vars.put("platform", "web");
+        vars.put("platform", platform);
 
         JSONObject body = new JSONObject();
         body.put("operationName", "PlaybackAccessToken");
@@ -336,9 +340,9 @@ public final class TwitchApi {
         }
         if (t == null) {
             JSONObject raw = new JSONObject();
-            raw.put("query", "query($login:String!,$pt:String!){streamPlaybackAccessToken(channelName:$login,"
-                    + "params:{platform:\"web\",playerBackend:\"mediaplayer\",playerType:$pt}){value signature}}");
-            raw.put("variables", new JSONObject().put("login", login).put("pt", playerType));
+            raw.put("query", "query($login:String!,$pt:String!,$pf:String!){streamPlaybackAccessToken(channelName:$login,"
+                    + "params:{platform:$pf,playerBackend:\"mediaplayer\",playerType:$pt}){value signature}}");
+            raw.put("variables", new JSONObject().put("login", login).put("pt", playerType).put("pf", platform));
             JSONObject data = post(raw.toString(), clientId).optJSONObject("data");
             t = data != null ? data.optJSONObject("streamPlaybackAccessToken") : null;
         }
@@ -355,69 +359,110 @@ public final class TwitchApi {
                 + "&sig=" + Uri.encode(tok[1]) + "&token=" + Uri.encode(tok[0]);
     }
 
-    /** Ergebnis einer Stream-Anfrage. url == null bedeutet offline/nicht verfügbar. */
+    /**
+     * Werbefreie Server: holen die Videoliste aus einer Region, in der Twitch keine
+     * Werbung ausspielt. Das Video selbst kommt danach direkt von Twitch.
+     */
+    public static final String[] PROXIES = {"https://eu.luminous.dev/live/", "https://eu2.luminous.dev/live/"};
+
+    /**
+     * Direkte Twitch-Varianten in der Reihenfolge, in der sie probiert werden.
+     * Getestet: Die Android-/Popout-Varianten bekommen meist keine Werbung,
+     * site/web dagegen schon. embed/autoplay haben nur reduzierte Qualität.
+     */
+    private static final String[][] DIRECT = {
+            {"site", "android"}, {"popout", "web"}, {"mobile", "android"}, {"site", "ios"},
+            {"site", "web"}, {"embed", "web"}, {"autoplay", "web"}};
+
+    private static final OkHttpClient PROXY_HTTP = HTTP.newBuilder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(6, TimeUnit.SECONDS)
+            .build();
+
+    /** Ergebnis einer Stream-Suche. */
     public static class Playback {
         public String url;
         public String master;
+        public String source = "";
         public boolean hasAds;
-    }
-
-    /** Haupt-Stream (beste Qualität). */
-    public static Playback mainPlayback(String login) throws Exception {
-        String[] tok = null;
-        for (String cid : new String[]{ANDROID_CLIENT_ID, WEB_CLIENT_ID}) {
-            try {
-                tok = token(login, "site", cid);
-                if (tok != null) break;
-            } catch (Exception e) {
-                Log.w(TAG, "Token mit " + cid + " fehlgeschlagen", e);
-            }
-        }
-        if (tok == null) return null;
-        Playback p = new Playback();
-        p.url = usherUrl(login, tok);
-        try {
-            p.master = get(p.url);
-        } catch (HttpException e) {
-            if (e.code == 404 || e.code == 403) return new Playback(); // offline
-            throw e;
-        }
-        String variant = lowestVariant(p.url, p.master);
-        if (variant != null) {
-            try {
-                p.hasAds = AdBlock.hasAds(get(variant));
-            } catch (Exception ignored) {
-            }
-        }
-        return p;
+        public boolean offline;
+        public boolean proxy;
+        public boolean reduced;
     }
 
     /**
-     * Sucht eine werbefreie Ersatz-Ausgabe des Streams (andere Player-Typen
-     * bekommen von Twitch oft keine Werbung eingeblendet).
+     * Sucht die beste Quelle für einen Stream: zuerst die werbefreien Server, dann die
+     * direkten Twitch-Varianten. Quellen in {@code skip} (kürzlich mit Werbung) werden
+     * übersprungen. Findet sich keine werbefreie Quelle, kommt die erste mit Werbung
+     * zurück (hasAds = true). null = keine Verbindung.
      */
-    public static Playback backupPlayback(String login) {
-        String[] types = {"embed", "popout", "autoplay", "picture-by-picture", "thunderdome"};
-        for (String pt : types) {
-            try {
-                String[] tok = token(login, pt, ANDROID_CLIENT_ID);
-                if (tok == null) continue;
-                String url = usherUrl(login, tok);
-                String master = get(url);
-                String variant = bestVariant(url, master);
-                if (variant == null) continue;
-                if (!AdBlock.hasAds(get(variant))) {
-                    Playback p = new Playback();
-                    p.url = url;
-                    p.master = master;
-                    Log.i(TAG, "Werbefreier Ersatz gefunden: " + pt);
-                    return p;
+    public static Playback findPlayback(String login, boolean adblock, boolean useProxy, java.util.Set<String> skip)
+            throws Exception {
+        String l = login.toLowerCase(Locale.ROOT);
+        Playback fallback = null;
+
+        if (adblock && useProxy) {
+            for (String px : PROXIES) {
+                String id = "proxy:" + px;
+                if (skip.contains(id)) continue;
+                try {
+                    String url = px + l + "?allow_source=true&allow_audio_only=true&fast_bread=true";
+                    String master = get(PROXY_HTTP, url);
+                    if (!master.contains("#EXTM3U") || bestVariant(url, master) == null) continue;
+                    Playback p = check(url, master, id, true);
+                    p.proxy = true;
+                    if (!p.hasAds) return p;
+                    if (fallback == null) fallback = p;
+                } catch (Exception e) {
+                    Log.w(TAG, "Werbefreier Server " + px + " nicht erreichbar", e);
                 }
-            } catch (Exception e) {
-                Log.w(TAG, "Ersatz " + pt + " fehlgeschlagen", e);
             }
         }
-        return null;
+
+        for (String[] d : DIRECT) {
+            String id = d[0] + "/" + d[1];
+            if (adblock && skip.contains(id)) continue;
+            try {
+                String[] tok = token(l, d[0], d[1], ANDROID_CLIENT_ID);
+                if (tok == null) continue;
+                String url = usherUrl(l, tok);
+                String master;
+                try {
+                    master = get(url);
+                } catch (HttpException e) {
+                    if (e.code == 404 || e.code == 403) {
+                        Playback off = new Playback();
+                        off.offline = true;
+                        return off;
+                    }
+                    throw e;
+                }
+                Playback p = check(url, master, id, adblock);
+                p.reduced = "embed".equals(d[0]) || "autoplay".equals(d[0]);
+                if (!adblock || !p.hasAds) return p;
+                if (fallback == null) fallback = p;
+            } catch (Exception e) {
+                Log.w(TAG, "Quelle " + id + " fehlgeschlagen", e);
+            }
+        }
+        return fallback;
+    }
+
+    private static Playback check(String url, String master, String id, boolean adblock) {
+        Playback p = new Playback();
+        p.url = url;
+        p.master = master;
+        p.source = id;
+        if (adblock) {
+            String v = bestVariant(url, master);
+            if (v != null) {
+                try {
+                    p.hasAds = AdBlock.hasAds(get(v));
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return p;
     }
 
     private static List<String[]> variants(String base, String master) {

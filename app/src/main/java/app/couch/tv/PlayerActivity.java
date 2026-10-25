@@ -37,9 +37,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @OptIn(markerClass = UnstableApi.class)
 public class PlayerActivity extends Activity implements AdBlock.Listener {
@@ -76,11 +79,15 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
     private boolean adblockOn;
 
     // Werbeblocker-Zustand
-    private String mainUrl, mainVariant, currentTag = "";
+    private boolean useProxy;
+    private String currentTag = "", currentSource = "";
+    private boolean currentReduced;
     private int generation;
-    private boolean onBackup, searchingBackup, covered, destroyed;
-    private int cleanCount, pollErrors, retries;
-    private long lastBackupTry;
+    private boolean searching, covered, destroyed;
+    private int retries;
+    private long lastSearch;
+    /** Quellen, die kürzlich Werbung hatten (Quelle -> Zeitpunkt). */
+    private final Map<String, Long> adSources = new HashMap<>();
 
     // Qualität
     private int wantHeight; // 0 = automatisch
@@ -138,6 +145,7 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
         mode = prefs.getInt("mode", 1);
         size = prefs.getInt("size", 1);
         adblockOn = prefs.getBoolean("adblock", true);
+        useProxy = prefs.getBoolean("proxy", true);
 
         player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
@@ -168,7 +176,7 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
 
         bindInfo();
         root.post(this::applyLayout);
-        loadMain();
+        findSource(true);
         h.postDelayed(infoTick, 60_000);
     }
 
@@ -220,36 +228,75 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
 
     // ------------------------------------------------------------ Wiedergabe
 
-    private void loadMain() {
-        status.setVisibility(View.GONE);
-        buffering.setVisibility(View.VISIBLE);
-        TwitchApi.async(() -> TwitchApi.mainPlayback(login), p -> {
+    /**
+     * Sucht die beste Quelle (werbefreier Server, dann werbefreie Twitch-Varianten)
+     * und spielt sie ab. Quellen, die kürzlich Werbung hatten, werden übersprungen.
+     */
+    private void findSource(boolean initial) {
+        if (searching) return;
+        searching = true;
+        lastSearch = System.currentTimeMillis();
+        if (initial) {
+            status.setVisibility(View.GONE);
+            buffering.setVisibility(View.VISIBLE);
+        }
+        final Set<String> skip = recentAdSources();
+        final boolean ab = adblockOn;
+        final boolean px = useProxy;
+        TwitchApi.async(() -> TwitchApi.findPlayback(login, ab, px, skip), p -> {
+            searching = false;
             if (destroyed) return;
             if (p == null) {
-                showStatus("Verbindung zu Twitch fehlgeschlagen.\nBitte später nochmals versuchen.");
+                if (player.getMediaItemCount() == 0) {
+                    showStatus("Verbindung zu Twitch fehlgeschlagen.\nBitte später nochmals versuchen.");
+                } else {
+                    retryLater();
+                }
                 return;
             }
-            if (p.url == null) {
+            if (p.offline) {
                 showStatus(displayName + " ist gerade offline.");
                 return;
             }
-            mainUrl = p.url;
-            mainVariant = TwitchApi.lowestVariant(p.url, p.master);
+            if (!p.source.equals(currentSource) || player.getMediaItemCount() == 0) play(p);
             if (adblockOn && p.hasAds) {
-                // Werbung schon zu Beginn (Pre-Roll): gar nicht erst abspielen
+                // Alle Quellen haben gerade Werbung: verdecken und bald nochmals suchen
                 setCover(true);
-                goBackup();
+                retryLater();
             } else {
-                play(mainUrl, false);
+                setCover(false);
             }
         });
     }
 
-    private void play(String url, boolean backup) {
+    private Set<String> recentAdSources() {
+        long now = System.currentTimeMillis();
+        Set<String> out = new HashSet<>();
+        for (Map.Entry<String, Long> e : adSources.entrySet()) {
+            if (now - e.getValue() < 180_000) out.add(e.getKey());
+        }
+        return out;
+    }
+
+    private final Runnable retryRun = () -> {
+        if (destroyed || !covered) return;
+        adSources.clear();
+        findSource(false);
+    };
+
+    private void retryLater() {
+        h.removeCallbacks(retryRun);
+        h.postDelayed(retryRun, 15_000);
+    }
+
+    private void play(TwitchApi.Playback p) {
         generation++;
-        currentTag = (backup ? "backup-" : "main-") + generation;
-        onBackup = backup;
-        backupBadge.setVisibility(backup ? View.VISIBLE : View.GONE);
+        currentSource = p.source;
+        currentReduced = p.reduced;
+        currentTag = p.source + "#" + generation;
+        backupBadge.setText(p.proxy ? "WERBEFREIER SERVER" : "ERSATZ-STREAM · REDUZIERTE QUALITÄT");
+        backupBadge.setVisibility(p.reduced ? View.VISIBLE : View.GONE);
+        if (p.proxy && generation == 1) flash("Werbefreier Server aktiv ✓");
 
         DefaultHttpDataSource.Factory http = new DefaultHttpDataSource.Factory()
                 .setUserAgent(TwitchApi.UA)
@@ -259,7 +306,7 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
         AdBlock.Factory factory = new AdBlock.Factory(http, currentTag, this);
         HlsMediaSource source = new HlsMediaSource.Factory(factory)
                 .setAllowChunklessPreparation(true)
-                .createMediaSource(MediaItem.fromUri(url));
+                .createMediaSource(MediaItem.fromUri(p.url));
         player.setMediaSource(source);
         player.prepare();
         player.setPlayWhenReady(true);
@@ -285,14 +332,11 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
             }
             if (retries < 4) {
                 retries++;
+                // Diese Quelle macht Probleme: eine andere nehmen
+                if (!currentSource.isEmpty()) adSources.put(currentSource, System.currentTimeMillis());
+                currentSource = "";
                 h.postDelayed(() -> {
-                    if (destroyed) return;
-                    if (onBackup) {
-                        lastBackupTry = 0;
-                        goBackup();
-                    } else {
-                        loadMain();
-                    }
+                    if (!destroyed) findSource(true);
                 }, 1500L * retries);
             } else {
                 showStatus("Der Stream konnte nicht abgespielt werden.");
@@ -316,84 +360,14 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
     @Override
     public void onPlaylist(String tag, boolean ads) {
         if (destroyed || !adblockOn || !tag.equals(currentTag)) return;
-        if (tag.startsWith("main")) {
-            if (ads) {
-                setCover(true);
-                if (!searchingBackup) goBackup();
-            } else if (!searchingBackup) {
-                setCover(false);
-            }
-        } else {
-            // Ersatz-Stream: falls auch dieser Werbung bekommt, verdecken
-            setCover(ads);
+        if (ads) {
+            // Werbung in der aktuellen Quelle: sofort verdecken und auf eine werbefreie Quelle wechseln
+            setCover(true);
+            adSources.put(currentSource, System.currentTimeMillis());
+            if (System.currentTimeMillis() - lastSearch > 8000) findSource(false);
+        } else if (!searching) {
+            setCover(false);
         }
-    }
-
-    private void goBackup() {
-        long now = System.currentTimeMillis();
-        if (searchingBackup || now - lastBackupTry < 15_000) return;
-        lastBackupTry = now;
-        searchingBackup = true;
-        TwitchApi.async(() -> TwitchApi.backupPlayback(login), p -> {
-            searchingBackup = false;
-            if (destroyed || !adblockOn) return;
-            if (p != null) {
-                play(p.url, true);
-                setCover(false);
-            } else if (onBackup || player.getMediaItemCount() == 0) {
-                // Kein werbefreier Ersatz: Hauptstream verdeckt und stumm weiterlaufen lassen
-                if (mainUrl != null) play(mainUrl, false);
-            }
-            startPolling();
-        });
-    }
-
-    private void startPolling() {
-        h.removeCallbacks(pollTick);
-        cleanCount = 0;
-        h.postDelayed(pollTick, 4000);
-    }
-
-    /** Prüft während des Ersatz-Streams, ob die Werbung im Hauptstream vorbei ist. */
-    private final Runnable pollTick = new Runnable() {
-        @Override
-        public void run() {
-            if (destroyed || !adblockOn) return;
-            if (!onBackup) return;
-            final String variant = mainVariant;
-            TwitchApi.async(() -> {
-                if (variant == null) return null;
-                return AdBlock.hasAds(TwitchApi.get(variant));
-            }, ads -> {
-                if (destroyed || !adblockOn) return;
-                if (ads == null) {
-                    pollErrors++;
-                    if (pollErrors >= 2) {
-                        pollErrors = 0;
-                        refreshMainUrl();
-                    }
-                } else if (!ads) {
-                    pollErrors = 0;
-                    cleanCount++;
-                    if (cleanCount >= 2) {
-                        play(mainUrl, false);
-                        flash("Werbung übersprungen ✓");
-                        return;
-                    }
-                } else {
-                    cleanCount = 0;
-                }
-                h.postDelayed(pollTick, 4000);
-            });
-        }
-    };
-
-    private void refreshMainUrl() {
-        TwitchApi.async(() -> TwitchApi.mainPlayback(login), p -> {
-            if (destroyed || p == null || p.url == null) return;
-            mainUrl = p.url;
-            mainVariant = TwitchApi.lowestVariant(p.url, p.master);
-        });
     }
 
     private void setCover(boolean on) {
@@ -401,17 +375,23 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
         covered = on;
         adCover.setVisibility(on ? View.VISIBLE : View.GONE);
         player.setVolume(on ? 0f : 1f);
+        if (!on) h.removeCallbacks(retryRun);
     }
 
     private void setAdblock(boolean on) {
         adblockOn = on;
         prefs.edit().putBoolean("adblock", on).apply();
-        if (!on) {
-            h.removeCallbacks(pollTick);
-            setCover(false);
-            if (onBackup && mainUrl != null) play(mainUrl, false);
-        }
+        if (!on) setCover(false);
         flash(on ? "Werbeblocker an" : "Werbeblocker aus");
+    }
+
+    private void setProxy(boolean on) {
+        useProxy = on;
+        prefs.edit().putBoolean("proxy", on).apply();
+        adSources.clear();
+        currentSource = "";
+        findSource(true);
+        flash(on ? "Werbefreier Server an" : "Werbefreier Server aus");
     }
 
     // ------------------------------------------------------------ Ansicht
@@ -588,6 +568,11 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
             setAdblock(!adblockOn);
             buildMainPills(adIdx);
         });
+        final int pxIdx = pills.getChildCount();
+        pill(useProxy ? "Werbefreier Server: An" : "Werbefreier Server: Aus", useProxy, v -> {
+            setProxy(!useProxy);
+            buildMainPills(pxIdx);
+        });
         final int fIdx = pills.getChildCount();
         boolean followed = Follows.is(this, login);
         pill(followed ? "♥ Gefolgt" : "♡ Folgen", followed, v -> {
@@ -650,7 +635,7 @@ public class PlayerActivity extends Activity implements AdBlock.Listener {
                 buildMainPills(QUALITY_INDEX);
             });
         }
-        if (onBackup) label("ERSATZ-STREAM: QUALITÄT EVTL. EINGESCHRÄNKT");
+        if (currentReduced) label("ERSATZ-STREAM: QUALITÄT EINGESCHRÄNKT");
         focusChild(2);
     }
 
