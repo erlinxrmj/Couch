@@ -1,0 +1,67 @@
+Bilder erzeugt
+### DIAG logins ['trymacs', 'eliasn97', 'tolkin', 'caedrel', 'sondergaardlol', 'ibai']
+### DIAG ===== Kanal trymacs
+### DIAG direkt site/web OK varianten 5 WERBUNG ['Amazon|2474283100494', 'Amazon|2474283100494', 'Amazon|2474283100494'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt embed/web OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt popout/web OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt autoplay/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt picture-by-picture/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt site/android OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt site/ios OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="480p30",FRAME-RATE=30.000
+### DIAG direkt mobile/android OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG proxy kwabang STATUS -1 URLError(gaierror(-5, 'No address associated with hostname'))
+### DIAG proxy T1080 STATUS -1 URLError(TimeoutError('timed out'))
+### DIAG proxy ttv.lol STATUS 200 <!DOCTYPE html> <html lang="en" class="scroll-smooth">     <head>         <meta charset="utf-8">         <meta name="viewport" content="width=device-width, init
+### DIAG proxy luminous eu OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy luminous eu2 OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy perfprod STATUS -1 TimeoutError('The read operation timed out')
+### DIAG proxy perfprod2 STATUS -1 TimeoutError('The read operation timed out')
+### DIAG ===== Kanal eliasn97
+### DIAG direkt site/web OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="720p60",FRAME-RATE=60.000
+### DIAG direkt embed/web OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="480p30",FRAME-RATE=30.000
+### DIAG direkt popout/web OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="720p60",FRAME-RATE=60.000
+### DIAG direkt autoplay/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt picture-by-picture/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt site/android OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="720p60",FRAME-RATE=60.000
+### DIAG direkt site/ios OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt mobile/android OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG proxy kwabang STATUS -1 URLError(gaierror(-5, 'No address associated with hostname'))
+### DIAG proxy T1080 STATUS -1 URLError(TimeoutError('timed out'))
+### DIAG proxy ttv.lol STATUS 200 <!DOCTYPE html> <html lang="en" class="scroll-smooth">     <head>         <meta charset="utf-8">         <meta name="viewport" content="width=device-width, init
+### DIAG proxy luminous eu OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy luminous eu2 OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy perfprod STATUS -1 TimeoutError('The read operation timed out')
+### DIAG proxy perfprod2 STATUS -1 TimeoutError('The read operation timed out')
+### DIAG ===== Kanal tolkin
+### DIAG direkt site/web OK varianten 5 WERBUNG ['Amazon|2474283100494', 'Amazon|2474283100494', 'Amazon|2474283100494'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="720p60",FRAME-RATE=60.000
+### DIAG direkt embed/web OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="480p30",FRAME-RATE=30.000
+### DIAG direkt popout/web OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.4D402A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt autoplay/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt picture-by-picture/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt site/android OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="720p60",FRAME-RATE=60.000
+### DIAG direkt site/ios OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="720p60",FRAME-RATE=60.000
+### DIAG direkt mobile/android OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.4D402A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG proxy kwabang STATUS -1 URLError(gaierror(-5, 'No address associated with hostname'))
+### DIAG proxy T1080 STATUS -1 URLError(TimeoutError('timed out'))
+### DIAG proxy ttv.lol STATUS 200 <!DOCTYPE html> <html lang="en" class="scroll-smooth">     <head>         <meta charset="utf-8">         <meta name="viewport" content="width=device-width, init
+### DIAG proxy luminous eu OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy luminous eu2 OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy perfprod STATUS -1 TimeoutError('The read operation timed out')
+### DIAG proxy perfprod2 STATUS -1 TimeoutError('The read operation timed out')
+### DIAG ===== Kanal caedrel
+### DIAG direkt site/web OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt embed/web OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt popout/web OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt autoplay/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt picture-by-picture/web OK varianten 2 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt site/android OK varianten 5 werbefrei ['live', 'live', 'live'] CS="avc1.64002A,mp4a.40.2",VIDEO="chunked",FRAME-RATE=60.000
+### DIAG direkt site/ios OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG direkt mobile/android OK varianten 5 werbefrei ['live', 'live', 'live'] ECS="avc1.4D401F,mp4a.40.2",VIDEO="360p30",FRAME-RATE=30.000
+### DIAG proxy kwabang STATUS -1 URLError(gaierror(-5, 'No address associated with hostname'))
+### DIAG proxy T1080 STATUS -1 URLError(TimeoutError('timed out'))
+### DIAG proxy ttv.lol STATUS 200 <!DOCTYPE html> <html lang="en" class="scroll-smooth">     <head>         <meta charset="utf-8">         <meta name="viewport" content="width=device-width, init
+### DIAG proxy luminous eu OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy luminous eu2 OK varianten 6 werbefrei ['live', 'live', 'live'] -ID="1080p60",IVS-NAME="1080p60",IVS-VARIANT-SOURCE="source"
+### DIAG proxy perfprod STATUS -1 TimeoutError('The read operation timed out')
+### DIAG proxy perfprod2 STATUS -1 TimeoutError('The read operation timed out')
+DIAG ENDE (absichtlicher Abbruch, damit das Protokoll gespeichert wird)
